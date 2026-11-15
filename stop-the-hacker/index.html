@@ -444,7 +444,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   paintMute(); muteBtn.addEventListener('click', () => { muted = !muted; store.set('hk-mute', muted); paintMute(); ensureAudio(); if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ac.currentTime, .05); });
 
   // ================= state =================
-  let state = 'title', wave = 0, gold = 0, hp = 20, kills = 0, score = 0, best = store.get('hk-best', 0);
+  let state = 'title', wave = 0, gold = 0, hp = 20, kills = 0, score = 0, best = store.get('hk-best2', 0);
   let towers = [], enemies = [], shots = [], beams = [], puddles = [], pulses = [], parts = [], texts = [], spawnQ = [], waveActive = false, speedX = 1, sel = null, choice = null, bubble = null, shake = 0, hurtAt = -9999;
   let jps = [], jackTotal = 0;
   let now = performance.now(), last = now, simT = 0, blocked = 0, lastLog = 0, skillReady = {}, skillUntil = {}, scanAt = -9999;
@@ -749,7 +749,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
     $('goBig').textContent = big; $('goBig').dataset.t = big;
     $('apology').textContent = `Due to attack #${wave}, your valuable data has been leaked. Our security analyst ${playerName()} is currently writing an incident report. We will strengthen passwords from 1234 to 12345.`;
     $('goScore').textContent = score.toLocaleString(); $('goWave').textContent = Math.max(0, wave - 1); $('goKills').textContent = kills;
-    if (score > best){ best = score; store.set('hk-best', best); } $('goBest').textContent = best.toLocaleString();
+    if (score > best){ best = score; store.set('hk-best2', best); } $('goBest').textContent = best.toLocaleString();
     log('[CRITICAL] Server taken over. All customer data leaked', 'warn');
     shareText = `Stop the Hacker: survived ${Math.max(0, wave - 1)} waves, then got hacked lol ${score.toLocaleString()} pts. Bet you fall on wave 1`;
     setTimeout(() => { $('over').hidden = false; $('againBtn').focus(); }, 700);
@@ -757,7 +757,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
   }
   function winGame(){
     state = 'won'; musicOn = false; score += kills * 5 + hp * 300; closeSheet(); $('wavebar').hidden = true;
-    $('wScore').textContent = score.toLocaleString(); $('wJack').textContent = jackTotal ? `> Hacker wallet raided: +${jackTotal.toLocaleString()} pts` : ''; if (score > best){ best = score; store.set('hk-best', best); }
+    $('wScore').textContent = score.toLocaleString(); $('wJack').textContent = jackTotal ? `> Hacker wallet raided: +${jackTotal.toLocaleString()} pts` : ''; if (score > best){ best = score; store.set('hk-best2', best); }
     log('[SECURE] Hacker caught. All threats blocked', 'info');
     shareText = `Stop the Hacker: blocked all 20 waves 🛡️ ${score.toLocaleString()} pts (+${jackTotal.toLocaleString()} from the hacker wallet) Certified security ace`;
     setTimeout(() => { $('win').hidden = false; $('againBtn2').focus(); }, 900);
@@ -776,24 +776,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 
   // Fill these in to turn on worldwide ranking. Left empty, rankings stay on this device.
   const LEADERBOARD = { projectId: 'space-xxx', apiKey: 'AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg' };
-  const COLLECTION = 'hack_scores', REMOTE = !!(LEADERBOARD.projectId && LEADERBOARD.apiKey), LB_LIMIT = 100;
-  let submittedBest = store.get('hk-submitted', 0), shareText = '';
+  const COLLECTION = 'hack_scores_v2', REMOTE = !!(LEADERBOARD.projectId && LEADERBOARD.apiKey), LB_LIMIT = 100;
+  let submittedBest = store.get('hk-submitted2', 0), shareText = '';
   const playerName = () => nick || 'Anonymous';
   const fsBase = () => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(LEADERBOARD.projectId)}/databases/(default)/documents`;
-  function logPlay(){ if (!REMOTE) return; try { fetch(`${fsBase()}/plays?key=${LEADERBOARD.apiKey}`, {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true, body: JSON.stringify({fields:{game:{stringValue:'hack'}, ts:{timestampValue:new Date().toISOString()}}})}).catch(() => {}); } catch(e){} }
+  function logPlay(){ if (!REMOTE) return; try { fetch(`${fsBase()}/plays_v2?key=${LEADERBOARD.apiKey}`, {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true, body: JSON.stringify({fields:{game:{stringValue:'hack'}, ts:{timestampValue:new Date().toISOString()}}})}).catch(() => {}); } catch(e){} }
   async function fsPost(url, body){ const ctrl = new AbortController(), tm = setTimeout(() => ctrl.abort(), 7000); try { const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), signal: ctrl.signal}); if (!r.ok) throw new Error(r.status); return await r.json(); } finally { clearTimeout(tm); } }
   async function loadBoard(){
-    if (!REMOTE) return {board: store.get('hk-board', []).sort((a, b) => b.score - a.score).slice(0, LB_LIMIT), remote:false};
+    if (!REMOTE) return {board: store.get('hk-board2', []).sort((a, b) => b.score - a.score).slice(0, LB_LIMIT), remote:false};
     const rows = await fsPost(`${fsBase()}:runQuery?key=${encodeURIComponent(LEADERBOARD.apiKey)}`, {structuredQuery:{from:[{collectionId: COLLECTION}], orderBy:[{field:{fieldPath:'score'}, direction:'DESCENDING'}], limit: LB_LIMIT}});
     return {remote:true, board: rows.filter(r => r.document).map(r => { const f = r.document.fields || {}; return {name: String((f.name && f.name.stringValue) || '?').slice(0, 12), score: +((f.score && f.score.integerValue) || 0), wave: +((f.wave && f.wave.integerValue) || 0)}; })};
   }
   async function saveEntry(e){
-    if (!REMOTE){ const b = store.get('hk-board', []); b.push(e); b.sort((a, c) => c.score - a.score); store.set('hk-board', b.slice(0, LB_LIMIT)); return; }
+    if (!REMOTE){ const b = store.get('hk-board2', []); b.push(e); b.sort((a, c) => c.score - a.score); store.set('hk-board2', b.slice(0, LB_LIMIT)); return; }
     await fsPost(`${fsBase()}/${COLLECTION}?key=${encodeURIComponent(LEADERBOARD.apiKey)}`, {fields:{name:{stringValue: e.name}, score:{integerValue: String(e.score)}, wave:{integerValue: String(e.wave)}, ts:{timestampValue: new Date().toISOString()}}});
   }
   async function submitScore(sc, wv, el){
     el.textContent = 'Checking rank…';
-    try { if (sc > 0 && sc > submittedBest){ await saveEntry({name: playerName(), score: sc, wave: wv}); submittedBest = sc; store.set('hk-submitted', sc); }
+    try { if (sc > 0 && sc > submittedBest){ await saveEntry({name: playerName(), score: sc, wave: wv}); submittedBest = sc; store.set('hk-submitted2', sc); }
       const {board: b, remote} = await loadBoard(), above = b.filter(r => r.score > sc).length; el.textContent = `${playerName()} · #${above + 1} ${remote ? 'overall' : 'on this device'}`;
     } catch(err){ el.textContent = 'Couldn’t reach the leaderboard'; }
   }
@@ -824,6 +824,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 </script>
 
 <script src="/zap-auth.js"></script>
-<script>try{zapAuth.syncKeys(['hk-best','spacexxx-nick'])}catch(e){}</script>
+<script>try{zapAuth.syncKeys(['hk-best2','spacexxx-nick'])}catch(e){}</script>
 </body>
 </html>
