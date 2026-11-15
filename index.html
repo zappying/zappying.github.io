@@ -39,6 +39,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;background-im
 main{position:relative;max-width:460px;margin:0 auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
 
 .top{display:flex;justify-content:flex-end;min-height:38px}
+.top.login{justify-content:center;margin:2px 0 4px}
+.top.login .acct{font-size:17px;padding:8px 18px 8px 8px}
+.loginnote{text-align:center;font-size:13px;opacity:.75;margin:0 0 18px}
 .acct{display:flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:5px 12px 5px 6px;box-shadow:0 3px 0 var(--ink);cursor:pointer}
 .acct:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .acct img{width:24px;height:24px;border-radius:50%;display:block}
@@ -82,13 +85,14 @@ footer a{color:var(--soft)}
 </head>
 <body>
 <main>
-  <div class="top"><button class="acct" id="acct" type="button"><span class="g">G</span><span id="acctTxt" data-ko="구글로 로그인">Sign in with Google</span></button></div>
   <header>
     <img id="mascot" src="zappy.png" alt="Zappy, the yellow zappying mascot" width="116" height="116">
     <h1>zappy<span>⚡</span>ing</h1>
     <p class="tag" data-ko="번쩍 만들고 빵 터지는 웹 게임<br>설치 없이 누르면 바로 플레이">Quick, silly web games<br>No install. Just tap and play.</p>
     <p class="hello" id="hello"></p>
   </header>
+  <div class="top login"><button class="acct" id="acct" type="button"><span class="g">G</span><span id="acctTxt" data-ko="구글로 로그인">Sign in with Google</span></button></div>
+  <p class="loginnote" id="loginnote">Sign in to keep your progress on any device.</p>
 
   <div id="games">
   <a class="card" href="keep-going/" id="game-keep" data-game="keep">
@@ -222,7 +226,8 @@ footer a{color:var(--soft)}
       if (u){ btn.querySelector('.g').outerHTML = u.photoURL ? `<img src="${u.photoURL}" alt="" referrerpolicy="no-referrer">` : '<span class="g">G</span>'; txt.textContent = (u.displayName || u.email || T('Signed in', '로그인됨')).split(' ')[0]; btn.title = T('Tap to sign out', '누르면 로그아웃'); }
       else { const i = btn.querySelector('img'); if (i) i.outerHTML = '<span class="g">G</span>'; txt.textContent = T('Sign in with Google', '구글로 로그인'); btn.title = ''; }
     };
-    draw(u); window.zapAuth.onChange(draw);
+    const note=document.getElementById('loginnote'); const d2=u=>{draw(u); if(note) note.textContent = u ? 'Progress saved to your Google account. Tap to sign out.' : 'Sign in to keep your progress on any device.';};
+    d2(u); window.zapAuth.onChange(d2);
   }).catch(() => {});
   btn.addEventListener('click', () => window.zapAuth.user() ? window.zapAuth.signOut() : window.zapAuth.signIn());
 })();
