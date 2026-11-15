@@ -38,9 +38,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;background-im
 :lang(ko) body{word-break:keep-all}
 main{position:relative;max-width:460px;margin:0 auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
 
-.top{display:flex;justify-content:flex-end;min-height:38px}
-.top.login{justify-content:center;margin:2px 0 4px}
-.top.login .acct{font-size:17px;padding:8px 18px 8px 8px}
+main>.top{display:flex;justify-content:flex-end;min-height:38px}
+main>.top.login{justify-content:center;margin:2px 0 4px}
+main>.top.login .acct{font-size:17px;padding:8px 18px 8px 8px}
 .loginnote{text-align:center;font-size:13px;opacity:.75;margin:0 0 18px}
 .acct{display:flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:5px 12px 5px 6px;box-shadow:0 3px 0 var(--ink);cursor:pointer}
 .acct:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
