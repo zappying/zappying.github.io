@@ -190,16 +190,29 @@ input.zn-bound{cursor:pointer}`;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   window.zapNick = { get, set, check, open, ensure, onChange: f => { subs.add(f); return () => subs.delete(f); } };
 })();
-/* "back to zappying" pill: shown on game menus (title, game over, win), hidden during play */
+/* in-game menu (⚙): resume, nickname, back to zappying home. Games put a <button id="zapMenuBtn"> in their HUD. */
 (() => {
   if (!/^\/[^/]+\//.test(location.pathname)) return;   // only inside a game folder
-  const IDS = ['start', 'title', 'over', 'win', 'endov'];
   const st = document.createElement('style');
-  st.textContent = `#zapHome{position:fixed;z-index:2147482000;top:calc(10px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px));display:none;align-items:center;gap:6px;font:700 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#1b1b2f;background:#ffd43b;border:2px solid #1b1b2f;border-radius:999px;padding:7px 12px 7px 9px;text-decoration:none;box-shadow:0 3px 0 #1b1b2f}#zapHome.on{display:inline-flex}#zapHome:active{transform:translateY(2px);box-shadow:0 1px 0 #1b1b2f}`;
-  const a = document.createElement('a'); a.id = 'zapHome'; a.href = '/'; a.innerHTML = '<span aria-hidden="true">⌂</span> zappying'; a.setAttribute('aria-label', 'Back to zappying home');
-  ['pointerdown', 'touchstart', 'mousedown'].forEach(t => a.addEventListener(t, e => e.stopPropagation(), {passive: true}));
-  const vis = el => { if (!el || el.hidden) return false; const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
-  const tick = () => { a.classList.toggle('on', IDS.some(id => vis(document.getElementById(id)))); };
-  const boot = () => { document.head.appendChild(st); document.body.appendChild(a); tick(); setInterval(tick, 400); };
+  st.textContent = `.zm-ov{position:fixed;inset:0;z-index:2147482500;background:rgba(10,12,30,.6);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}.zm-ov[hidden]{display:none!important}
+.zm-card{width:min(300px,100%);background:#fffaf0;color:#1b1b2f;border:3px solid #1b1b2f;border-radius:18px;box-shadow:0 5px 0 #1b1b2f;padding:16px;display:flex;flex-direction:column;gap:10px}
+.zm-card h3{margin:0 0 2px;font-size:18px;text-align:center}
+.zm-card button,.zm-card a{font:inherit;font-weight:700;font-size:16px;text-align:center;padding:12px;border-radius:12px;border:2px solid #1b1b2f;background:#fff;color:#1b1b2f;cursor:pointer;text-decoration:none;display:block}
+.zm-card .zm-home{background:#ffd43b}`;
+  const ov = document.createElement('div'); ov.className = 'zm-ov'; ov.hidden = true;
+  ov.innerHTML = '<div class="zm-card" role="dialog" aria-modal="true" aria-label="Menu"><h3>⚙ Menu</h3><button type="button" class="zm-resume">▶ Resume</button><button type="button" class="zm-nick">✏️ Change nickname</button><a class="zm-home" href="/">⌂ zappying home</a></div>';
+  const stop = e => e.stopPropagation();
+  ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'mousedown', 'click', 'keydown'].forEach(t => ov.addEventListener(t, stop));
+  const close = () => { ov.hidden = true; };
+  ov.addEventListener('pointerdown', e => { if (e.target === ov) close(); });
+  ov.querySelector('.zm-resume').addEventListener('click', close);
+  ov.querySelector('.zm-nick').addEventListener('click', () => { close(); window.zapNick && zapNick.open(); });
+  const open = () => { ov.hidden = false; };
+  const boot = () => {
+    document.head.appendChild(st); document.body.appendChild(ov);
+    const b = document.getElementById('zapMenuBtn');
+    if (b){ ['pointerdown', 'touchstart', 'mousedown'].forEach(t => b.addEventListener(t, stop, {passive: true})); b.addEventListener('click', e => { e.stopPropagation(); open(); }); }
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.zapMenu = { open, close };
 })();
