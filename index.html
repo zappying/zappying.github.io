@@ -164,9 +164,9 @@ footer a{color:var(--soft)}
   const best = k => Number(JSON.parse(read(k) || '0'));
   const mine = {
     keep: () => { try { const s = JSON.parse(read('keepgoing.save') || read('kg4') || 'null'); if (!s || !s.mx) return null; const c = Math.min(5, s.selCH || 1), m = Math.min(15, s.mx[c] || 1); return T(`Stage ${c}-${m}`, `${c}-${m} 스테이지`); } catch(e){ return null; } },
-    hack: () => { const v = best('hk-best'); return v ? pts(v) : null; },
-    mom: () => { const v = best('md-best'); return v ? pts(v) : null; },
-    space: () => { const t = Number(read('skystack-bestTotal') || 0), f = Number(read('skystack-best1') || 0); return t ? T(`Total ${fmt(t)} pts`, `총점 ${fmt(t)}점`) : f ? T(`${f} floors`, `${f}층`) : null; }
+    hack: () => { const v = best('hk-best2'); return v ? pts(v) : null; },
+    mom: () => { const v = best('md-best2'); return v ? pts(v) : null; },
+    space: () => { const t = Number(read('skystack-bestTotal2') || 0), f = Number(read('skystack-best12') || 0); return t ? T(`Total ${fmt(t)} pts`, `총점 ${fmt(t)}점`) : f ? T(`${f} floors`, `${f}층`) : null; }
   };
   const recEl = g => document.querySelector(`.rec[data-game="${g}"]`);
   function line(el, cls, label, value){
@@ -188,7 +188,7 @@ footer a{color:var(--soft)}
       return f ? {name: String(f.name.stringValue || '?').slice(0, 12), score: Number(f.score.integerValue || 0)} : null;
     } catch(e){ return undefined; } finally { clearTimeout(t); }
   }
-  [['hack', 'hack_scores'], ['mom', 'mom_scores'], ['space', 'scores']].forEach(async ([g, col]) => {
+  [['hack', 'hack_scores_v2'], ['mom', 'mom_scores_v2'], ['space', 'scores_v2']].forEach(async ([g, col]) => {
     const r = await top1(col);
     if (r === undefined) return;            // offline: say nothing rather than claim it's empty
     line(recEl(g), 'top', T('#1 now', '지금 1등'), r ? `${r.name} · ${pts(r.score)}` : T('Empty, be the first!', '비어 있음, 첫 1등 도전!'));
@@ -199,7 +199,7 @@ footer a{color:var(--soft)}
     const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 6000);
     try {
       const res = await fetch(`https://firestore.googleapis.com/v1/projects/space-xxx/databases/(default)/documents:runAggregationQuery?key=${KEY}`, {method:'POST', headers:{'Content-Type':'application/json'}, signal: ctrl.signal,
-        body: JSON.stringify({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'plays'}], where:{fieldFilter:{field:{fieldPath:'game'}, op:'EQUAL', value:{stringValue:game}}}}, aggregations:[{alias:'n', count:{}}]}})});
+        body: JSON.stringify({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'plays_v2'}], where:{fieldFilter:{field:{fieldPath:'game'}, op:'EQUAL', value:{stringValue:game}}}}, aggregations:[{alias:'n', count:{}}]}})});
       if (!res.ok) return undefined;
       const rows = await res.json(), f = rows[0] && rows[0].result && rows[0].result.aggregateFields;
       return f && f.n ? Number(f.n.integerValue || 0) : 0;
