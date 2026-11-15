@@ -380,7 +380,7 @@ body{margin:0;background:#f3e6d6;color:var(--ink);font-family:var(--kr);overflow
   paintMute(); muteBtn.addEventListener('click', () => { muted = !muted; store.set('md-mute', muted); paintMute(); ensureAudio(); if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ac.currentTime, .05); });
 
   // ================= game state =================
-  let state = 'title', stage = 0, lives = 3, score = 0, safes = 0, best = store.get('md-best', 0);
+  let state = 'title', stage = 0, lives = 3, score = 0, safes = 0, best = store.get('md-best2', 0);
   let phase = 'away', phaseEnd = 0, holding = false, progress = 0, lv = 1, streak = 0, releasedAt = -9999, warnAt = 0, fakeNext = false, smackAt = -9999, bubble = null, texts = [], shake = 0;
   let now = performance.now(), last = now, phoneTick = 0, evNext = 0, forceReal = false, snitch = null, notif = null, adUntil = 0;
   const A = () => WATCH[stage];
@@ -417,7 +417,7 @@ body{margin:0;background:#f3e6d6;color:var(--ink);font-family:var(--kr);overflow
     floatText(`STAGE CLEAR +${bonus}`, 300, '#2fae7c', 30, 1500);
     setTimeout(() => { if (stage === WATCH.length - 1) return allClear(); stage++; showIntro(); }, 1500);
   }
-  function finish(){ const nb = score > best; if (nb){ best = Math.floor(score); store.set('md-best', best); } return nb; }
+  function finish(){ const nb = score > best; if (nb){ best = Math.floor(score); store.set('md-best2', best); } return nb; }
   function gameOver(){
     state = 'over'; musicOn = false; setTimeout(() => sfx('over'), 200);
     const a = A(); $('goBig').textContent = a.over[0]; $('goSub').textContent = a.over[1];
@@ -572,24 +572,24 @@ body{margin:0;background:#f3e6d6;color:var(--ink);font-family:var(--kr);overflow
   // ================= leaderboard =================
   // Fill these in to turn on worldwide ranking. Left empty, rankings stay on this device.
   const LEADERBOARD = { projectId: 'space-xxx', apiKey: 'AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg' };
-  const COLLECTION = 'mom_scores', REMOTE = !!(LEADERBOARD.projectId && LEADERBOARD.apiKey), LB_LIMIT = 100;
-  let submittedBest = store.get('md-submitted', 0), shareText = '';
+  const COLLECTION = 'mom_scores_v2', REMOTE = !!(LEADERBOARD.projectId && LEADERBOARD.apiKey), LB_LIMIT = 100;
+  let submittedBest = store.get('md-submitted2', 0), shareText = '';
   const playerName = () => nick || 'Anonymous';
   const fsBase = () => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(LEADERBOARD.projectId)}/databases/(default)/documents`;
-  function logPlay(){ if (!REMOTE) return; try { fetch(`${fsBase()}/plays?key=${LEADERBOARD.apiKey}`, {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true, body: JSON.stringify({fields:{game:{stringValue:'mom'}, ts:{timestampValue:new Date().toISOString()}}})}).catch(() => {}); } catch(e){} }
+  function logPlay(){ if (!REMOTE) return; try { fetch(`${fsBase()}/plays_v2?key=${LEADERBOARD.apiKey}`, {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true, body: JSON.stringify({fields:{game:{stringValue:'mom'}, ts:{timestampValue:new Date().toISOString()}}})}).catch(() => {}); } catch(e){} }
   async function fsPost(url, body){ const ctrl = new AbortController(), tm = setTimeout(() => ctrl.abort(), 7000); try { const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), signal: ctrl.signal}); if (!r.ok) throw new Error(r.status); return await r.json(); } finally { clearTimeout(tm); } }
   async function loadBoard(){
-    if (!REMOTE) return {board: store.get('md-board', []).sort((a, b) => b.score - a.score).slice(0, LB_LIMIT), remote:false};
+    if (!REMOTE) return {board: store.get('md-board2', []).sort((a, b) => b.score - a.score).slice(0, LB_LIMIT), remote:false};
     const rows = await fsPost(`${fsBase()}:runQuery?key=${encodeURIComponent(LEADERBOARD.apiKey)}`, {structuredQuery:{from:[{collectionId: COLLECTION}], orderBy:[{field:{fieldPath:'score'}, direction:'DESCENDING'}], limit: LB_LIMIT}});
     return {remote:true, board: rows.filter(r => r.document).map(r => { const f = r.document.fields || {}; return {name: String((f.name && f.name.stringValue) || '?').slice(0, 12), score: +((f.score && f.score.integerValue) || 0), stage: +((f.stage && f.stage.integerValue) || 0)}; })};
   }
   async function saveEntry(e){
-    if (!REMOTE){ const b = store.get('md-board', []); b.push(e); b.sort((a, c) => c.score - a.score); store.set('md-board', b.slice(0, LB_LIMIT)); return; }
+    if (!REMOTE){ const b = store.get('md-board2', []); b.push(e); b.sort((a, c) => c.score - a.score); store.set('md-board2', b.slice(0, LB_LIMIT)); return; }
     await fsPost(`${fsBase()}/${COLLECTION}?key=${encodeURIComponent(LEADERBOARD.apiKey)}`, {fields:{name:{stringValue: e.name}, score:{integerValue: String(e.score)}, stage:{integerValue: String(e.stage)}, ts:{timestampValue: new Date().toISOString()}}});
   }
   async function submitScore(sc, st, el){
     el.textContent = 'Checking rank…';
-    try { if (sc > 0 && sc > submittedBest){ await saveEntry({name: playerName(), score: sc, stage: st}); submittedBest = sc; store.set('md-submitted', sc); }
+    try { if (sc > 0 && sc > submittedBest){ await saveEntry({name: playerName(), score: sc, stage: st}); submittedBest = sc; store.set('md-submitted2', sc); }
       const {board: b, remote} = await loadBoard(), above = b.filter(r => r.score > sc).length;
       el.textContent = `${playerName()} · #${above + 1} ${remote ? 'overall' : 'on this device'}`;
     } catch(err){ el.textContent = 'Couldn’t reach the leaderboard'; }
@@ -620,6 +620,6 @@ body{margin:0;background:#f3e6d6;color:var(--ink);font-family:var(--kr);overflow
 })();
 </script>
 <script src="/zap-auth.js"></script>
-<script>try{zapAuth.syncKeys(['md-best','spacexxx-nick'])}catch(e){}</script>
+<script>try{zapAuth.syncKeys(['md-best2','spacexxx-nick'])}catch(e){}</script>
 </body>
 </html>
