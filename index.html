@@ -41,6 +41,9 @@ main{position:relative;max-width:460px;margin:0 auto;padding-top:calc(20px + env
 main>.top{display:flex;justify-content:flex-end;min-height:38px}
 main>.top.login{justify-content:center;margin:2px 0 4px}
 main>.top.login .acct{font-size:17px;padding:8px 18px 8px 8px}
+.nickline{text-align:center;font-size:15px;margin:6px 0 2px;min-height:24px}
+.nickline b{color:var(--zap)}
+.nickline button{font:inherit;font-size:13px;font-weight:700;margin-left:4px;padding:3px 10px;border-radius:999px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);cursor:pointer}
 .loginnote{text-align:center;font-size:13px;opacity:.75;margin:0 0 18px}
 .acct{display:flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:5px 12px 5px 6px;box-shadow:0 3px 0 var(--ink);cursor:pointer}
 .acct:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
@@ -92,6 +95,7 @@ footer a{color:var(--soft)}
     <p class="hello" id="hello"></p>
   </header>
   <div class="top login"><button class="acct" id="acct" type="button"><span class="g">G</span><span id="acctTxt" data-ko="구글로 로그인">Sign in with Google</span></button></div>
+  <div class="nickline" id="zapNickLine"></div>
   <p class="loginnote" id="loginnote">Sign in to keep your progress on any device.</p>
 
   <div id="games">
