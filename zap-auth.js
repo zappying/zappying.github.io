@@ -3,7 +3,7 @@
    Then: zapAuth.syncKeys(['my-best-key']) keeps those localStorage keys in the player's cloud save
    (numbers keep the higher value, text keeps the device value unless it is empty). */
 (() => {
-  const CFG = {apiKey:'AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg', authDomain:'space-xxx.firebaseapp.com', projectId:'space-xxx'};
+  const CFG = {apiKey:'AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg', authDomain:'auth.zappying.com', projectId:'space-xxx'};
   const V = '10.12.2', subs = new Set();
   const NICK = 'spacexxx-nick', CLAIM = 'zap-nick-claimed', CLOUD_FIRST = new Set([NICK, CLAIM]);
   let user = null, db = null, synced = [NICK, CLAIM], pushT = null, readyRes, readyRej, pullP = Promise.resolve();
