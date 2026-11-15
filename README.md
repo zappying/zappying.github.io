@@ -1,2 +1,3 @@
-# zap-play.github.io
-zapplay — instant web games
+# zappying
+
+Instant web games — https://zappying.github.io

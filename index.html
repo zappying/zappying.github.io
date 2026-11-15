@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>zappying</title>
+<meta name="description" content="Quick, silly web games you can play instantly. No install, just tap and play.">
+<meta property="og:title" content="zappying — instant web games">
+<meta property="og:description" content="One more round... and an hour is gone. Free web games, no install.">
+<meta property="og:image" content="og.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1b1e38">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="zappy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Press+Start+2P&family=Nanum+Gothic:wght@700;800&display=swap">
+<style>
+/* Layout: one centred link-in-bio column; mascot header with sign-in, then one card per game, newest first. */
+:root{
+  --navy:#1b1e38;
+  --navy-2:#262a4d;
+  --ink:#0e0f1f;
+  --cream:#fffaf0;
+  --zap:#ffd93b;
+  --zap-deep:#f5a524;
+  --muted:#5a5f80;
+  --soft:#c9cbe6;
+  --sans:"Fredoka","Nanum Gothic",system-ui,-apple-system,sans-serif;
+  --px:"Press Start 2P","Courier New",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{min-height:100vh;background:radial-gradient(circle at 50% 0%,#2f3566 0%,var(--navy) 60%) fixed,var(--navy);color:var(--cream);font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:24px 24px}
+:lang(ko) body{word-break:keep-all}
+main{position:relative;max-width:460px;margin:0 auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+
+.top{display:flex;justify-content:flex-end;min-height:38px}
+.acct{display:flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:5px 12px 5px 6px;box-shadow:0 3px 0 var(--ink);cursor:pointer}
+.acct:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.acct img{width:24px;height:24px;border-radius:50%;display:block}
+.acct .g{width:24px;height:24px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800;color:#4285f4;font-size:15px}
+.acct:focus-visible,.card:focus-visible{outline:4px solid var(--zap);outline-offset:3px}
+
+header{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+#mascot{width:116px;height:116px;border-radius:28px;border:4px solid var(--ink);box-shadow:0 6px 0 var(--ink),0 0 32px rgba(255,217,59,.35);display:block}
+h1{font-family:var(--px);font-weight:400;font-size:26px;margin:4px 0 0;letter-spacing:-.5px;color:var(--cream)}
+h1 span{color:var(--zap)}
+.tag{margin:0;font-size:19px;line-height:1.35;color:var(--soft);text-wrap:balance}
+.hello{font-size:16px;color:var(--zap);min-height:20px;margin:0}
+
+#games{display:flex;flex-direction:column;gap:18px}
+.card{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;background:var(--cream);color:var(--ink);border:4px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:12px;text-decoration:none;position:relative;transition:transform .12s,box-shadow .12s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--ink)}
+.card:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.thumb{width:120px;aspect-ratio:4/5;max-width:100%;border-radius:12px;border:3px solid var(--ink);overflow:hidden;background:#d7d9ef}
+.thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.info{display:flex;flex-direction:column;gap:6px;min-width:0}
+.badge{position:absolute;top:-12px;right:14px;font-family:var(--px);font-size:10px;color:var(--ink);background:var(--zap);border:3px solid var(--ink);border-radius:999px;padding:6px 9px}
+.badge.hot{background:#ff7a59;color:#fff}
+.name{font-size:25px;font-weight:700;line-height:1.05;margin:0}
+.name small{display:block;font-family:var(--px);font-size:9px;font-weight:400;color:var(--muted);margin-top:5px;letter-spacing:.04em}
+.desc{margin:0;font-size:16px;line-height:1.35;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips span{font-size:13px;font-weight:500;background:#eef0ff;border:2px solid #d3d6f5;border-radius:999px;padding:2px 9px}
+.plays{font-size:13px;color:var(--muted)}
+.rec{display:flex;flex-direction:column;gap:2px;font-size:14px;color:var(--muted)}
+.rec b{font-weight:700;color:var(--ink)}
+.rec .top b{color:#d9480f}
+.play{margin-top:auto;align-self:flex-start;font-size:18px;font-weight:700;background:var(--zap);border:3px solid var(--ink);border-radius:12px;padding:5px 16px;box-shadow:0 3px 0 var(--ink)}
+
+.soon{border:4px dashed rgba(255,255,255,.28);border-radius:20px;padding:18px;text-align:center;font-size:17px;color:var(--soft);background:rgba(255,255,255,.04)}
+.soon b{display:block;font-family:var(--px);font-size:11px;font-weight:400;margin-bottom:8px;color:var(--zap)}
+footer{text-align:center;font-size:14px;color:var(--soft);line-height:1.7}
+footer a{color:var(--soft)}
+@media (max-width:360px){.card{grid-template-columns:96px minmax(0,1fr)}.thumb{width:96px}.name{font-size:22px}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><button class="acct" id="acct" type="button"><span class="g">G</span><span id="acctTxt" data-ko="구글로 로그인">Sign in with Google</span></button></div>
+  <header>
+    <img id="mascot" src="zappy.png" alt="Zappy, the yellow zappying mascot" width="116" height="116">
+    <h1>zappy<span>⚡</span>ing</h1>
+    <p class="tag" data-ko="번쩍 만들고 빵 터지는 웹 게임<br>설치 없이 누르면 바로 플레이">Quick, silly web games<br>No install. Just tap and play.</p>
+    <p class="hello" id="hello"></p>
+  </header>
+
+  <div id="games">
+  <a class="card" href="keep-going/" id="game-keep" data-game="keep">
+    <span class="badge">NEW</span>
+    <div class="thumb"><img src="thumb_keep.jpg" alt="KEEP GOING gameplay: a crowned medieval knight firing arrows at a skeleton army" width="600" height="750"></div>
+    <div class="info">
+      <h2 class="name" data-ko="킵고잉<small>KEEP GOING</small>">Keep Going<small>IDLE ACTION RPG</small></h2>
+      <p class="desc" data-ko="석기시대 돌도끼부터 현대 소총까지. 시대를 넘으며 계속 나아가는 방치형 액션! 탑 오르기·농사·펫까지.">From stone axes to assault rifles. Fight your way through 5 eras, climb the tower, grow a farm, collect pets.</p>
+      <div class="chips" data-ko="<span>방치형</span><span>액션</span><span>5시대</span>"><span>Idle</span><span>Action</span><span>5 eras</span></div>
+      <div class="rec" data-game="keep"></div>
+      <span class="play" data-ko="플레이 ▶">Play ▶</span>
+    </div>
+  </a>
+
+  <a class="card" href="mom-dont-look/" id="game-mom" data-game="mom">
+    <div class="thumb"><img src="thumb_mom.jpg" alt="Mom Don't Look gameplay: a kid sneaking a phone game behind mom's back" width="600" height="750"></div>
+    <div class="info">
+      <h2 class="name" data-ko="엄마 몰래 폰겜<small>MOM DON'T LOOK</small>">Mom Don't Look<small>DON'T GET CAUGHT</small></h2>
+      <p class="desc" data-ko="꾹 누르면 폰겜, 떼면 공부하는 척. 돌아보면 등짝 스매싱!">Hold to game, let go to fake studying. If mom turns around, you're toast!</p>
+      <div class="chips" data-ko="<span>눈치</span><span>꾹 누르기</span><span>5단계</span>"><span>Sneaky</span><span>Hold</span><span>5 levels</span></div>
+      <div class="rec" data-game="mom"></div>
+      <span class="play" data-ko="플레이 ▶">Play ▶</span>
+    </div>
+  </a>
+
+  <a class="card" href="stop-the-hacker/" id="game-hack" data-game="hack">
+    <div class="thumb"><img src="thumb_hack.jpg" alt="Stop the Hacker gameplay: security modules blocking ransomware sent by a hacker" width="600" height="750"></div>
+    <div class="info">
+      <h2 class="name" data-ko="해커를 막아라!<small>STOP THE HACKER</small>">Stop the Hacker<small>CYBER TOWER DEFENSE</small></h2>
+      <p class="desc" data-ko="디도스·랜섬웨어·제로데이가 몰려온다. 보안 모듈 깔아서 서버 지키기. 털리면 시말서!">DDoS, ransomware, zero-days, incoming! Deploy security modules and keep the server alive.</p>
+      <div class="chips" data-ko="<span>디펜스</span><span>전략</span><span>20웨이브</span>"><span>Defense</span><span>Strategy</span><span>20 waves</span></div>
+      <div class="rec" data-game="hack"></div>
+      <span class="play" data-ko="플레이 ▶">Play ▶</span>
+    </div>
+  </a>
+
+  <a class="card" href="sky-stack/" id="game-space" data-game="space">
+    <div class="thumb"><img src="thumb_space.jpg" alt="Sky Stack gameplay: a steel tower being hit by a cat thrown by the neighbor" width="600" height="750"></div>
+    <div class="info">
+      <h2 class="name" data-ko="스카이 스택<small>SKY STACK</small>">Sky Stack<small>TOWER TO SPACE</small></h2>
+      <p class="desc" data-ko="비둘기 똥 피해서 120층 쌓고, 랜덤 점수만큼 우주로 날아가는 탑 쌓기.">Dodge pigeon poop, stack 120 floors, then blast off into space for a random score.</p>
+      <div class="chips" data-ko="<span>원터치</span><span>병맛</span><span>운빨</span>"><span>One tap</span><span>Silly</span><span>Luck</span></div>
+      <div class="rec" data-game="space"></div>
+      <span class="play" data-ko="플레이 ▶">Play ▶</span>
+    </div>
+  </a>
+  </div>
+
+  <div class="soon" data-ko="<b>COMING SOON</b>다음 게임 만드는 중… ⚡">
+    <b>COMING SOON</b>Next game is charging up… ⚡</div>
+
+  <footer>© zappying<br><a href="privacy.html" data-ko="개인정보처리방침">Privacy Policy</a> · <a href="terms.html" data-ko="이용약관">Terms of Service</a></footer>
+</main>
+
+<script src="zap-auth.js"></script>
+<script>
+(() => {
+  const KO = /^ko\b/i.test(navigator.language || '');
+  const T = (en, ko) => KO ? ko : en;
+  if (KO){ document.documentElement.lang = 'ko'; document.querySelectorAll('[data-ko]').forEach(el => { el.innerHTML = el.dataset.ko; }); }
+
+  const read = k => { try { return localStorage.getItem(k); } catch(e){ return null; } };
+  const nick = read('spacexxx-nick');
+  const hello = document.getElementById('hello');
+  if (nick) hello.textContent = T(`Hey ${nick}, what are we playing today?`, `${nick}님, 오늘은 뭐 할까요?`);
+
+  const fmt = n => Number(n).toLocaleString();
+  const pts = v => T(`${fmt(v)} pts`, `${fmt(v)}점`);
+  const best = k => Number(JSON.parse(read(k) || '0'));
+  const mine = {
+    keep: () => { try { const s = JSON.parse(read('keepgoing.save') || read('kg4') || 'null'); if (!s || !s.mx) return null; const c = Math.min(5, s.selCH || 1), m = Math.min(15, s.mx[c] || 1); return T(`Stage ${c}-${m}`, `${c}-${m} 스테이지`); } catch(e){ return null; } },
+    hack: () => { const v = best('hk-best'); return v ? pts(v) : null; },
+    mom: () => { const v = best('md-best'); return v ? pts(v) : null; },
+    space: () => { const t = Number(read('skystack-bestTotal') || 0), f = Number(read('skystack-best1') || 0); return t ? T(`Total ${fmt(t)} pts`, `총점 ${fmt(t)}점`) : f ? T(`${f} floors`, `${f}층`) : null; }
+  };
+  const recEl = g => document.querySelector(`.rec[data-game="${g}"]`);
+  function line(el, cls, label, value){
+    const d = document.createElement('div'); if (cls) d.className = cls;
+    d.append(label + ' '); const b = document.createElement('b'); b.textContent = value; d.appendChild(b); el.appendChild(d);
+  }
+  for (const g of ['keep', 'hack', 'mom', 'space']){ const v = mine[g](); if (v) line(recEl(g), '', T('My best', '내 최고'), v); }
+
+  // current #1 on each game's online leaderboard
+  const KEY = 'AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg';
+  const URL_ = `https://firestore.googleapis.com/v1/projects/space-xxx/databases/(default)/documents:runQuery?key=${KEY}`;
+  async function top1(collection){
+    const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      const res = await fetch(URL_, {method:'POST', headers:{'Content-Type':'application/json'}, signal: ctrl.signal,
+        body: JSON.stringify({structuredQuery:{from:[{collectionId:collection}], orderBy:[{field:{fieldPath:'score'}, direction:'DESCENDING'}], limit:1}})});
+      if (!res.ok) return undefined;
+      const rows = await res.json(), f = rows[0] && rows[0].document && rows[0].document.fields;
+      return f ? {name: String(f.name.stringValue || '?').slice(0, 12), score: Number(f.score.integerValue || 0)} : null;
+    } catch(e){ return undefined; } finally { clearTimeout(t); }
+  }
+  [['hack', 'hack_scores'], ['mom', 'mom_scores'], ['space', 'scores']].forEach(async ([g, col]) => {
+    const r = await top1(col);
+    if (r === undefined) return;            // offline: say nothing rather than claim it's empty
+    line(recEl(g), 'top', T('#1 now', '지금 1등'), r ? `${r.name} · ${pts(r.score)}` : T('Empty, be the first!', '비어 있음, 첫 1등 도전!'));
+  });
+
+  // most played first: each game logs a "plays" document when a run starts; count them per game
+  async function plays(game){
+    const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      const res = await fetch(`https://firestore.googleapis.com/v1/projects/space-xxx/databases/(default)/documents:runAggregationQuery?key=${KEY}`, {method:'POST', headers:{'Content-Type':'application/json'}, signal: ctrl.signal,
+        body: JSON.stringify({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:'plays'}], where:{fieldFilter:{field:{fieldPath:'game'}, op:'EQUAL', value:{stringValue:game}}}}, aggregations:[{alias:'n', count:{}}]}})});
+      if (!res.ok) return undefined;
+      const rows = await res.json(), f = rows[0] && rows[0].result && rows[0].result.aggregateFields;
+      return f && f.n ? Number(f.n.integerValue || 0) : 0;
+    } catch(e){ return undefined; } finally { clearTimeout(t); }
+  }
+  (async () => {
+    const box = document.getElementById('games'), cards = [...box.querySelectorAll('.card')];
+    const counts = await Promise.all(cards.map(c => plays(c.dataset.game)));
+    if (counts.some(n => n === undefined)) return;                 // offline: keep the newest-first order
+    const all = cards.map((c, i) => ({c, n: counts[i], i})), newest = all[0];
+    const order = all.slice(1).sort((a, b) => b.n - a.n || a.i - b.i);
+    const tag = (c, n) => { if (n > 0){ const p = document.createElement('div'); p.className = 'plays'; p.textContent = T(`🔥 ${fmt(n)} plays`, `🔥 ${fmt(n)}판 플레이`); c.querySelector('.rec').before(p); } };
+    box.appendChild(newest.c); tag(newest.c, newest.n);
+    order.forEach(({c, n}, rank) => {
+      box.appendChild(c); tag(c, n);
+      if (rank === 0 && n > 0 && (!order[1] || n > order[1].n)){ let b = c.querySelector('.badge'); if (!b){ b = document.createElement('span'); c.prepend(b); } b.className = 'badge hot'; b.textContent = T('#1 HOT', '인기 1위'); }
+    });
+  })();
+
+  // Google sign-in, shared by every game on this site
+  const btn = document.getElementById('acct'), txt = document.getElementById('acctTxt');
+  window.zapAuth.ready.then(u => {
+    const draw = u => {
+      if (u){ btn.querySelector('.g').outerHTML = u.photoURL ? `<img src="${u.photoURL}" alt="" referrerpolicy="no-referrer">` : '<span class="g">G</span>'; txt.textContent = (u.displayName || u.email || T('Signed in', '로그인됨')).split(' ')[0]; btn.title = T('Tap to sign out', '누르면 로그아웃'); }
+      else { const i = btn.querySelector('img'); if (i) i.outerHTML = '<span class="g">G</span>'; txt.textContent = T('Sign in with Google', '구글로 로그인'); btn.title = ''; }
+    };
+    draw(u); window.zapAuth.onChange(draw);
+  }).catch(() => {});
+  btn.addEventListener('click', () => window.zapAuth.user() ? window.zapAuth.signOut() : window.zapAuth.signIn());
+})();
+</script>
+</body>
+</html>
