@@ -146,7 +146,7 @@ footer a{color:var(--soft)}
 <script src="zap-auth.js"></script>
 <script>
 (() => {
-  const KO = /^ko\b/i.test(navigator.language || '');
+  const KO = false; // English-only site
   const T = (en, ko) => KO ? ko : en;
   if (KO){ document.documentElement.lang = 'ko'; document.querySelectorAll('[data-ko]').forEach(el => { el.innerHTML = el.dataset.ko; }); }
 
