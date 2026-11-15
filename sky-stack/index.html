@@ -105,6 +105,9 @@ canvas{display:block;width:100%;height:100%;cursor:pointer}
 .rankbtn{pointer-events:auto;font-family:var(--kr);font-size:17px;color:var(--chip-on-ink);background:var(--glow);border:0;border-radius:999px;padding:9px 20px;cursor:pointer;text-shadow:none}
 .rankbtn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.rankbtn.gift{background:#ffd43b;color:#1b1b2f;font-size:19px;padding:11px 24px;margin-bottom:8px;box-shadow:0 4px 0 #b8860b}
+#giftov{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(10,12,30,.82);color:#fff;font-family:var(--kr);text-align:center}
+#giftov.on{display:flex}#giftov b{font-size:30px}#giftov span{font-size:16px;opacity:.8;margin-top:6px}
 .rankbtn.ghost{background:var(--chip);color:var(--ink)}
 .myrank{font-family:var(--kr);font-size:19px;min-height:22px}
 .rank{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:rgba(6,8,24,.72);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
@@ -170,6 +173,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
     <button class="rankbtn" id="rankOpen" type="button">Leaderboard</button>
   </div>
 
+  <div id="giftov"><b>🎁 Free continue!</b><span>It’s on us ⚡</span></div>
   <div class="panel sh" id="over" hidden>
     <h1 id="overTitle">TOWER DOWN</h1>
     <div id="fZone"></div>
@@ -187,6 +191,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
     </div>
     <div id="newbest" hidden>New best!</div>
     <div id="myRank" class="myrank"></div>
+    <div class="btnrow"><button class="rankbtn gift" id="contBtn" type="button" hidden>🎁 Continue</button></div>
     <div class="btnrow"><button class="rankbtn" id="rankOpen2" type="button">Leaderboard</button><button class="rankbtn ghost" id="shareBtn" type="button">Share</button></div>
     <div class="tap">Tap to retry</div>
   </div>
@@ -544,6 +549,12 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
     mine:    ['It wasn’t a gift','You actually fell for it'],
     greedy:  ['Died chasing an item','Greed got you','Fingers too busy']
   };
+  let contUsed = false, contFloor = 0, contStack = null;
+  /* rewarded slot: real H5 ad once approved (window.ZAP_ADS), free until then */
+  function rewardSlot(cb){
+    if (window.ZAP_ADS && typeof window.adBreak === 'function'){ let done = false; try { adBreak({type:'reward', name:'sky_continue', beforeReward: show => show(), adViewed: () => { if (!done){ done = true; cb(); } }, adDismissed: () => {}, afterAd: () => {}, adBreakDone: () => {}}); return; } catch(e){} }
+    $('giftov').classList.add('on'); setTimeout(() => { $('giftov').classList.remove('on'); cb(); }, 700);
+  }
   function gameOver(){
     state = 'over';
     const now0 = performance.now(), s = stack.length-1, isBest = s > best;
@@ -560,6 +571,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
       const b = stack[i], n = stack.length-1-i;
       debris.push({x:b.x, y:b.y, w:b.w, vy:-(1+Math.random()*3), vx:(Math.random()-.5)*5, r:0, vr:(Math.random()-.5)*.16, wait:n*4});
     }
+    contStack = stack.map(b => ({...b})); contFloor = s; $('contBtn').hidden = contUsed || contFloor < 3; $('contBtn').textContent = `🎁 Continue from ${contFloor}F`;
     stack.length = keep;
     timeScale = reduce ? 1 : .28; if (!reduce) shake = 12;
     const recent = lastHit && now0 - lastHit.t < 6000 ? lastHit.kind : null;
@@ -576,14 +588,25 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
 
   // count a play for the "most played" order on zappying.github.io (fire and forget)
   function logPlay(){
-    try { fetch('https://firestore.googleapis.com/v1/projects/sky-stack/databases/(default)/documents/plays_v2?key=AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg', {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true,
+    try { fetch('https://firestore.googleapis.com/v1/projects/space-xxx/databases/(default)/documents/plays_v2?key=AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg', {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true,
       body: JSON.stringify({fields:{game:{stringValue:'space'}, ts:{timestampValue:new Date().toISOString()}}})}).catch(() => {}); } catch(e){}
   }
+  function continueRun(){
+    if (contUsed || state !== 'over') return;
+    rewardSlot(() => {
+      contUsed = true; if (contStack) stack = contStack; contStack = null; overEl.hidden = true; $('doom').classList.remove('on'); hud.hidden = false;
+      state = 'play'; timeScale = 1; shake = 0; debris = []; combo = 0; hz = null; drops = []; shots = []; blackout = 0;
+      fx = {slow:0, magnet:0, shield:false, boost:0, fast:0, flip:0, ammo:0, guard:0}; nextDropT = performance.now() + 6000;
+      scoreEl.textContent = String(stack.length - 1); renderFx(); renderCombo(); renderBld(); spawn();
+    });
+  }
+  $('contBtn').addEventListener('pointerdown', e => e.stopPropagation());
+  $('contBtn').addEventListener('click', e => { e.stopPropagation(); continueRun(); });
   function startGame(){
     ensureAudio(); logPlay();
     startEl.hidden = true; overEl.hidden = true; hud.hidden = false; $('doom').classList.remove('on');
     state='play'; endReady = false; flight = null; fw = []; $('myRank').textContent = '';
-    reset(); scoreEl.textContent='0'; $('altV').textContent='0 m'; $('zName').textContent='Ground';
+    contUsed = false; reset(); scoreEl.textContent='0'; $('altV').textContent='0 m'; $('zName').textContent='Ground';
   }
 
   function input(e){
