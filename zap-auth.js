@@ -190,3 +190,16 @@ input.zn-bound{cursor:pointer}`;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   window.zapNick = { get, set, check, open, ensure, onChange: f => { subs.add(f); return () => subs.delete(f); } };
 })();
+/* "back to zappying" pill: shown on game menus (title, game over, win), hidden during play */
+(() => {
+  if (!/^\/[^/]+\//.test(location.pathname)) return;   // only inside a game folder
+  const IDS = ['start', 'title', 'over', 'win', 'endov'];
+  const st = document.createElement('style');
+  st.textContent = `#zapHome{position:fixed;z-index:2147482000;top:calc(10px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px));display:none;align-items:center;gap:6px;font:700 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#1b1b2f;background:#ffd43b;border:2px solid #1b1b2f;border-radius:999px;padding:7px 12px 7px 9px;text-decoration:none;box-shadow:0 3px 0 #1b1b2f}#zapHome.on{display:inline-flex}#zapHome:active{transform:translateY(2px);box-shadow:0 1px 0 #1b1b2f}`;
+  const a = document.createElement('a'); a.id = 'zapHome'; a.href = '/'; a.innerHTML = '<span aria-hidden="true">⌂</span> zappying'; a.setAttribute('aria-label', 'Back to zappying home');
+  ['pointerdown', 'touchstart', 'mousedown'].forEach(t => a.addEventListener(t, e => e.stopPropagation(), {passive: true}));
+  const vis = el => { if (!el || el.hidden) return false; const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const tick = () => { a.classList.toggle('on', IDS.some(id => vis(document.getElementById(id)))); };
+  const boot = () => { document.head.appendChild(st); document.body.appendChild(a); tick(); setInterval(tick, 400); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
