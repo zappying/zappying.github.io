@@ -212,8 +212,8 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
   const D = {speed:2.4, inc:.07, max:6.5, tol:6, streak:3, grow:12, item:.18};
   const COMBO_GOAL = 5, COMBO_AUTO = 3;     // every 5 perfects in a row → 3 floors stacked for you
   let best = 0;
-  try { best = +localStorage.getItem('skystack-best1') || 0; } catch(e){}
-  function saveBest(){ try{ localStorage.setItem('skystack-best1', best); }catch(e){} }
+  try { best = +localStorage.getItem('skystack-best12') || 0; } catch(e){}
+  function saveBest(){ try{ localStorage.setItem('skystack-best12', best); }catch(e){} }
 
   // ================= items =================
   const ITEMS = {
@@ -574,7 +574,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
 
   // count a play for the "most played" order on zappying.github.io (fire and forget)
   function logPlay(){
-    try { fetch('https://firestore.googleapis.com/v1/projects/sky-stack/databases/(default)/documents/plays?key=AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg', {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true,
+    try { fetch('https://firestore.googleapis.com/v1/projects/sky-stack/databases/(default)/documents/plays_v2?key=AIzaSyAOEpHjYw322A0Vfrjmp2KNw9WAYUGURtg', {method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true,
       body: JSON.stringify({fields:{game:{stringValue:'space'}, ts:{timestampValue:new Date().toISOString()}}})}).catch(() => {}); } catch(e){}
   }
   function startGame(){
@@ -1661,7 +1661,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
 
   // ================= the end: a flight as far as a random score =================
   let endT = 0, endReady = false, flight = null, fw = [], bestTotal = 0;
-  try { bestTotal = +localStorage.getItem('skystack-bestTotal') || 0; } catch(e){}
+  try { bestTotal = +localStorage.getItem('skystack-bestTotal2') || 0; } catch(e){}
   const PLANETS = [
     {name:'Mars',   at:300,   r:24, c1:'#ee8a5c', c2:'#a3452a', msg:'Growing potatoes on Mars'},
     {name:'Jupiter',   at:1000,  r:50, c1:'#ecd0ac', c2:'#b07c52', bands:true, msg:'Boom in Jupiter’s atmosphere'},
@@ -1835,7 +1835,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
     $('bonusMsg').textContent = F.dest < 0 ? FAIL_MSG : PLANETS[F.dest].msg;
     $('bonusTotal').textContent = `Total ${total.toLocaleString()} pts · Best ${Math.max(total, bestTotal).toLocaleString()} pts`;
     $('newbest').hidden = !(total > bestTotal);
-    if (total > bestTotal){ bestTotal = total; try{ localStorage.setItem('skystack-bestTotal', bestTotal); }catch(e){} }
+    if (total > bestTotal){ bestTotal = total; try{ localStorage.setItem('skystack-bestTotal2', bestTotal); }catch(e){} }
     $('bonusRow').hidden = false;
     submitScore(total, s, F.dest < 0 ? 'Launch failed' : PLANETS[F.dest].name);
     shareText = F.dest < 0 ? `Stacked all 120 floors in Sky Stack (the launch went boom lol). Total ${total.toLocaleString()} pts. Bet you never see floor 120` : `I flew to ${PLANETS[F.dest].name} in Sky Stack 🚀 Total ${total.toLocaleString()} pts. Bet you can’t even leave Earth`;
@@ -1855,7 +1855,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
   try {
     nick = localStorage.getItem('spacexxx-nick') || '';
     anonTag = localStorage.getItem('spacexxx-anon') || '';
-    submittedBest = +localStorage.getItem('spacexxx-submitted') || 0;
+    submittedBest = +localStorage.getItem('spacexxx-submitted2') || 0;
   } catch(e){}
   if (!anonTag){ anonTag = String(1000 + Math.floor(Math.random()*9000)); try{ localStorage.setItem('spacexxx-anon', anonTag); }catch(e){} }
   const cleanName = v => v.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 12);
@@ -1886,11 +1886,11 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
       return await res.json();
     } finally { clearTimeout(timer); }
   }
-  function localBoard(){ try { return JSON.parse(localStorage.getItem('spacexxx-board') || '[]'); } catch(e){ return []; } }
+  function localBoard(){ try { return JSON.parse(localStorage.getItem('spacexxx-board2') || '[]'); } catch(e){ return []; } }
   async function loadBoard(){
     if (!REMOTE) return {board: localBoard().sort((a,b) => b.score - a.score).slice(0, LB_LIMIT), remote:false};
     const rows = await fsPost(`${fsBase()}:runQuery?key=${encodeURIComponent(LEADERBOARD.apiKey)}`,
-      {structuredQuery:{from:[{collectionId:'scores'}], orderBy:[{field:{fieldPath:'score'}, direction:'DESCENDING'}], limit:LB_LIMIT}});
+      {structuredQuery:{from:[{collectionId:'scores_v2'}], orderBy:[{field:{fieldPath:'score'}, direction:'DESCENDING'}], limit:LB_LIMIT}});
     const board = rows.filter(r => r.document).map(r => {
       const f = r.document.fields || {};
       return {name: String((f.name && f.name.stringValue) || '?').slice(0, 12), score: +((f.score && f.score.integerValue) || 0),
@@ -1901,10 +1901,10 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
   async function saveEntry(entry){
     if (!REMOTE){
       const b = localBoard(); b.push(entry); b.sort((a,c) => c.score - a.score);
-      try{ localStorage.setItem('spacexxx-board', JSON.stringify(b.slice(0, LB_LIMIT))); }catch(e){}
+      try{ localStorage.setItem('spacexxx-board2', JSON.stringify(b.slice(0, LB_LIMIT))); }catch(e){}
       return;
     }
-    await fsPost(`${fsBase()}/scores?key=${encodeURIComponent(LEADERBOARD.apiKey)}`, {fields:{
+    await fsPost(`${fsBase()}/scores_v2?key=${encodeURIComponent(LEADERBOARD.apiKey)}`, {fields:{
       name:{stringValue:entry.name}, score:{integerValue:String(entry.score)}, floors:{integerValue:String(entry.floors)},
       dest:{stringValue:entry.dest}, ts:{timestampValue:new Date().toISOString()}}});
   }
@@ -1915,7 +1915,7 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
     try {
       if (score > 0 && score > submittedBest){
         await saveEntry(entry);
-        submittedBest = score; try{ localStorage.setItem('spacexxx-submitted', score); }catch(e){}
+        submittedBest = score; try{ localStorage.setItem('spacexxx-submitted2', score); }catch(e){}
       }
       const {board, remote} = await loadBoard();
       const above = board.filter(r => r.score > score).length, where = remote ? 'overall' : 'on this device';
@@ -2069,6 +2069,6 @@ body{font:14px system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:tr
 })();
 </script>
 <script src="/zap-auth.js"></script>
-<script>try{zapAuth.syncKeys(['skystack-bestTotal','skystack-best1','spacexxx-nick'])}catch(e){}</script>
+<script>try{zapAuth.syncKeys(['skystack-bestTotal2','skystack-best12','spacexxx-nick'])}catch(e){}</script>
 </body>
 </html>
