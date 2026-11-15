@@ -198,9 +198,9 @@ input.zn-bound{cursor:pointer}`;
 .zm-card{width:min(300px,100%);background:#fffaf0;color:#1b1b2f;border:3px solid #1b1b2f;border-radius:18px;box-shadow:0 5px 0 #1b1b2f;padding:16px;display:flex;flex-direction:column;gap:10px}
 .zm-card h3{margin:0 0 2px;font-size:18px;text-align:center}
 .zm-card button,.zm-card a{font:inherit;font-weight:700;font-size:16px;text-align:center;padding:12px;border-radius:12px;border:2px solid #1b1b2f;background:#fff;color:#1b1b2f;cursor:pointer;text-decoration:none;display:block}
-.zm-card .zm-home{background:#ffd43b}`;
+.zm-card .zm-home{background:#ffd43b;display:flex;align-items:center;justify-content:center;gap:8px}.zm-card .zm-home img{width:26px;height:26px;border-radius:8px;border:2px solid #1b1b2f}`;
   const ov = document.createElement('div'); ov.className = 'zm-ov'; ov.hidden = true;
-  ov.innerHTML = '<div class="zm-card" role="dialog" aria-modal="true" aria-label="Menu"><h3>⚙ Menu</h3><button type="button" class="zm-resume">▶ Resume</button><button type="button" class="zm-nick">✏️ Change nickname</button><a class="zm-home" href="/">⌂ zappying home</a></div>';
+  ov.innerHTML = '<div class="zm-card" role="dialog" aria-modal="true" aria-label="Menu"><h3>⚙ Menu</h3><button type="button" class="zm-resume">▶ Resume</button><button type="button" class="zm-nick">✏️ Change nickname</button><a class="zm-home" href="/"><img src="/zappy.png" alt="" width="26" height="26">Back to zappying</a></div>';
   const stop = e => e.stopPropagation();
   ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'mousedown', 'click', 'keydown'].forEach(t => ov.addEventListener(t, stop));
   const close = () => { ov.hidden = true; };
